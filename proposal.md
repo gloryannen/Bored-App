@@ -19,6 +19,7 @@
   * Activity - activities, type, participants, price
   * User - username, email, password
   * User Activities -  saved, completed (with date), and ignored activities
+  * Tags - tag name
 
 # API Issues
 
@@ -47,5 +48,3 @@
   * Delete Account button for users that wish to remove their account.
 * My Activities page - Shows saved and completed activities with their corresponding tags. Remove activities. Add tags to activities or remove them.
 * My Tags page - Shows form to add tags as well as a list of all tags the user has created. Clicking on a tag links the user to a page with all activities they completed that have that tag included. This tag activities page has a form to update the tag or delete it, deleting this tag from all activities completed.
-
-
