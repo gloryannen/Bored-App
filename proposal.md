@@ -9,7 +9,7 @@
 * This app will use the Bored API to access data such as :
 
   * Activities - Receive activities based on specified criteria or get a random activity by not selecting a criteria at all
-  * Type - Select from a wide varitiy of activity types such as charity, educational, music, social, relaxation, and many more
+  * Type - Select from a wide variety of activity types such as charity, educational, music, social, relaxation, and many more
   * Participants - Choose how many people may be involved in the activity
   * Price Range - Choose from price ranges (Free, $, $$, $$$)
 
@@ -39,13 +39,13 @@
 * Signup / Login Page - This will be the landing page for all users coming into the application.
 * User Home Page - After login in or signing up, users will see:
   * Navigation bar - Home, My Activities, My Tags, Logout
-    * My Activities sub menu - Saved Activies, Completed Activities
+    * My Activities sub menu - Saved Activities, Completed Activities
   * User home page - Details page with information such as:
     * Number of completed activities with a link to a page with all activities completed.
     * Number of saved activities with a link to a page with all saved activities.
-  * A form with criterias for searching an activity will be right below this. The form also provides a random button that chooses a random activity without the criteria constraints. Upon form submission, the activity list will appear under the form. User can choose to save the activity, complete it, or ignore it.
+  * A form with criterias for searching an activity will be right below this. The form also provides a random button that chooses a random activity without the criteria constraints. Upon form submission, the activity list will appear under the form. The user can choose to save the activity, complete it, or ignore it.
   * Delete Account button for users that wish to remove their account.
 * My Activities page - Shows saved and completed activities with their corresponding tags. Remove activities. Add tags to activities or remove them.
-* My Tags page - Shows form to add tags as well as a list of all tags user has created. Clicking on a tag links the user to a page with all activities they completed that has that tag included. This tag activities page has a form to update the tag or delete it, deleting this tag from all activities completed.
+* My Tags page - Shows form to add tags as well as a list of all tags the user has created. Clicking on a tag links the user to a page with all activities they completed that have that tag included. This tag activities page has a form to update the tag or delete it, deleting this tag from all activities completed.
 
 
