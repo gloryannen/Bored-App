@@ -13,6 +13,20 @@ def home_page():
     '''Home page'''
     
     return render_template('home.html')
+
+@bp_routes.route('/activity', methods=['GET'])
+def activity_page():
+    """Activity page"""
+    
+    return render_template('activity.html')
+
+@bp_routes.route('/activity/', methods=['POST'])
+def create_page():
+    """Activity page"""
+    
+    return "Thanks"
+
+
 # endregion
 
 # region User Routes

@@ -118,9 +118,66 @@ class User_Activities(db.Model):
     
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id",  ondelete="cascade"),
         primary_key=True,
     )
+    
+    activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True
+    )
+
+class Saved_Activity(db.Model):
+    """User saved activities"""
+    
+    __tablename__ = "saved_activities"
+    
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="cascade"),
+        primary_key=True,
+    )
+    
+    activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True
+    )
+
+class Completed_Activity(db.Model):
+    """User completed activities"""
+    
+    __tablename__ = "completed_activities"
+    
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="cascade"),
+        primary_key=True,
+    )
+    
+    activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True
+    )
+    
+class Ignored_Activity(db.Model):
+    """User ignored activities"""
+    
+    __tablename__ = "ignored_activities"
+    
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="cascade"),
+        primary_key=True,
+    )
+    
+    activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True
+    )    
     
 class Tag(db.Model):
     """Tags created by users."""   
@@ -139,7 +196,6 @@ class Tag(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
-        primary_key=True,
     )
     
 class Activities_Tag(db.Model):
@@ -147,9 +203,15 @@ class Activities_Tag(db.Model):
     
     __tablename__ = "activities_tag"
     
+    activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True,
+    )
+    
     tag_id = db.Column(
         db.Integer,
-        db.ForeignKey("tags.id", ondelete="cascade"),
+        db.ForeignKey("tags.id"),
         primary_key=True,
     )
     
@@ -159,28 +221,30 @@ class Activities_Tag(db.Model):
         primary_key=True,
     )
     
-class Note(db.Model):
+class Activity_Note(db.Model):
     """Notes created by user."""
     
-    __tablename__ = "notes"
+    __tablename__ = "activity_notes"
     
     id = db.Column(
         db.Integer,
         primary_key=True,
     )
     
-    text = db.Column(
+    note = db.Column(
         db.Text,
     )
     
     activity_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id"),
+        db.ForeignKey("activities.id", ondelete="cascade"),
+        primary_key=True,
     )
     
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
+        primary_key=True,
     )
     
     
