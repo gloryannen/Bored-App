@@ -1,6 +1,29 @@
 {% extends 'base.html' %} {% block title %}Home{% endblock %} {% block content
 %}
 
-<h1>This is Home</h1>
+<div class="container">
+  <div class="row">
+    <div class="col" id="activity">
+      <h1>Welcome</h1>
+      <div class="mb-3">
+        <div class="form-group">
+          <button class="btn btn-warning" onclick="fetchData();">
+            Random Activity
+          </button>
+        </div>
+        <div class="text-center" id="spinDiv" style="display: none">
+          <div class="spinner-border" role="status" id="spinner">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div
+          class="container"
+          id="activityContainer"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

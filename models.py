@@ -79,16 +79,16 @@ class User(db.Model):
 
         return False
 
-class Activity(db.Model):
-    """Activities in the system."""
+class User_Activity(db.Model):
+    """User Activities in the system."""
     
-    __tablename__ = "activities"
+    __tablename__ = "user_activities"
     
     id = db.Column(
         db.Integer,
         primary_key=True,
     )
-    
+
     title = db.Column(
         db.Text,
         nullable=False,
@@ -106,15 +106,10 @@ class Activity(db.Model):
         default="1",
     )
     
-    price_range = db.Column(
+    price = db.Column(
         db.Float,
         default="0.0",
     )
-    
-class User_Activities(db.Model):
-    """User activities."""   
-    
-    __tablename__ = "user_activities"
     
     user_id = db.Column(
         db.Integer,
@@ -122,44 +117,57 @@ class User_Activities(db.Model):
         primary_key=True,
     )
     
-    activity_id = db.Column(
-        db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
-        primary_key=True
-    )
-
+    saved_activities = db.relationship("User_Activity",
+                                       secondary="saved_activities",)
+    ignored_activities = db.relationship("User_Activity",
+                                         secondary="ignored_activities",)
+    complete_activities = db.relationship("User_Activity",
+                                          secondary="completed_activities",)
+        
 class Saved_Activity(db.Model):
     """User saved activities"""
     
     __tablename__ = "saved_activities"
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
     
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
-        primary_key=True,
     )
     
-    activity_id = db.Column(
+    user_activity_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
-        primary_key=True
+        db.ForeignKey("user_activities.id", ondelete="cascade"),
     )
+   
 
 class Completed_Activity(db.Model):
     """User completed activities"""
     
     __tablename__ = "completed_activities"
     
-    user_id = db.Column(
+    id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
         primary_key=True,
     )
     
-    activity_id = db.Column(
+    user_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
-        primary_key=True
+        db.ForeignKey("users.id", ondelete="cascade"),
+    )
+    
+    user_activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user_activities.id", ondelete="cascade"),
+    )
+    
+    timestamp = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow(),
     )
     
 class Ignored_Activity(db.Model):
@@ -167,17 +175,20 @@ class Ignored_Activity(db.Model):
     
     __tablename__ = "ignored_activities"
     
-    user_id = db.Column(
+    id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
         primary_key=True,
     )
     
-    activity_id = db.Column(
+    user_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
-        primary_key=True
-    )    
+        db.ForeignKey("users.id", ondelete="cascade"),
+    )
+    
+    user_activity_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user_activities.id", ondelete="cascade"),
+    )
     
 class Tag(db.Model):
     """Tags created by users."""   
@@ -203,7 +214,7 @@ class Activities_Tag(db.Model):
     
     __tablename__ = "activities_tag"
     
-    activity_id = db.Column(
+    user_activities_id = db.Column(
         db.Integer,
         db.ForeignKey("activities.id", ondelete="cascade"),
         primary_key=True,
@@ -235,7 +246,7 @@ class Activity_Note(db.Model):
         db.Text,
     )
     
-    activity_id = db.Column(
+    user_activities_id = db.Column(
         db.Integer,
         db.ForeignKey("activities.id", ondelete="cascade"),
         primary_key=True,
