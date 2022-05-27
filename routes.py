@@ -117,20 +117,23 @@ def activity_page():
 @bp_routes.route('/activity/save', methods=(['POST']))
 def handle_saved_activity():
     """Save activity on DB"""
-
-        # form = SavedActivityForm()
-        
-        # saved_activity = Saved_Activity(
-        #     title= form.title.data,
-        #     type=request.form['type'],
-        #     participants=request.form['participants'],
-        #     price=request.form['price'],
-        # )
-        
-        # db.session.add(saved_activity)
-        # db.session.commit()
-        
-        # return redirect("/activity")
+    
+    form = SavedActivityForm()
+    user=g.user
+    
+    user_activity = User_Activity(
+        title= form.title.data,
+        type=form.type.data,
+        participants=form.participants.data,
+        price=form.price.data,
+        key=form.key.data,
+        user_id=user.id,
+    )
+    
+    db.session.add(user_activity)
+    db.session.commit()
+    
+    return redirect("/activity")
 
 @bp_routes.route('/activity/ignore', methods=(['POST']))
 def handle_ignored_activity():
@@ -176,7 +179,7 @@ def get_random_activity():
     
     resp = requests.get(BORED_API)
     data = resp.json()
-    return redirect(url_for("users_show", data=data))
+    return data
    
 
 # endregion

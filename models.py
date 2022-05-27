@@ -1,6 +1,7 @@
 """SQLAlchemy models for Bored."""
 
 from datetime import datetime
+from enum import unique
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -84,8 +85,9 @@ class User_Activity(db.Model):
     
     __tablename__ = "user_activities"
     
-    id = db.Column(
+    key = db.Column(
         db.Integer,
+        unique=True,
         primary_key=True,
     )
 
@@ -216,7 +218,7 @@ class Activities_Tag(db.Model):
     
     user_activities_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
+        db.ForeignKey("user_activities.id", ondelete="cascade"),
         primary_key=True,
     )
     
@@ -248,7 +250,7 @@ class Activity_Note(db.Model):
     
     user_activities_id = db.Column(
         db.Integer,
-        db.ForeignKey("activities.id", ondelete="cascade"),
+        db.ForeignKey("user_activities.id", ondelete="cascade"),
         primary_key=True,
     )
     

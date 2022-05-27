@@ -27,9 +27,10 @@ class UpdateUserForm(FlaskForm):
 class SavedActivityForm(FlaskForm):
     """Save activity form."""
     
-    title = StringField()
-    type = StringField()
-    participants = IntegerField()
-    price = FloatField()
+    key = HiddenField(name="activityKey")
+    type = HiddenField(name="activityType")
+    title = HiddenField(name="activityTitle")
+    participants = HiddenField(name="activityParticipants")
+    price = HiddenField(name="activityPrice")
         
     
