@@ -17,7 +17,8 @@ class User(db.Model):
 
     id = db.Column(
         db.Integer,
-        primary_key=True,
+        autoincrement=True,
+        unique=True,
     )
 
     email = db.Column(
@@ -30,6 +31,7 @@ class User(db.Model):
         db.Text,
         nullable=False,
         unique=True,
+        primary_key=True,
     )
 
     password = db.Column(
@@ -85,6 +87,13 @@ class User_Activity(db.Model):
     
     __tablename__ = "user_activities"
     
+    id = db.Column(
+        db.Integer,
+        autoincrement=True,
+        primary_key=True,
+        unique=True,
+    )
+    
     key = db.Column(
         db.Integer,
         unique=True,
@@ -118,9 +127,7 @@ class User_Activity(db.Model):
         db.ForeignKey("users.id",  ondelete="cascade"),
         primary_key=True,
     )
-    
-    saved_activities = db.relationship("User_Activity",
-                                       secondary="saved_activities",)
+
     ignored_activities = db.relationship("User_Activity",
                                          secondary="ignored_activities",)
     complete_activities = db.relationship("User_Activity",
