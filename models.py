@@ -19,6 +19,7 @@ class User(db.Model):
         db.Integer,
         autoincrement=True,
         unique=True,
+        primary_key=True,
     )
 
     email = db.Column(
@@ -31,7 +32,6 @@ class User(db.Model):
         db.Text,
         nullable=False,
         unique=True,
-        primary_key=True,
     )
 
     password = db.Column(
@@ -96,20 +96,16 @@ class User_Activity(db.Model):
     
     key = db.Column(
         db.Integer,
-        unique=True,
-        primary_key=True,
     )
 
     title = db.Column(
         db.Text,
         nullable=False,
-        unique=True,
     )
     
     type = db.Column(
         db.Text,
         nullable=False,
-        unique=True,
     )
     
     participants = db.Column(
@@ -125,7 +121,6 @@ class User_Activity(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id",  ondelete="cascade"),
-        primary_key=True,
     )
 
     ignored_activities = db.relationship("User_Activity",

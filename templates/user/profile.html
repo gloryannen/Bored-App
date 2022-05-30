@@ -3,11 +3,31 @@
 
 <div class="container">
   <div class="row">
-    <div class="col" id="activity">
+    <div class="col text-center mt-4" id="activity">
       <h1>Welcome {{user.username.upper()}}</h1>
       <div class="mb-3">
         <div class="form-group">
-          <button class="btn btn-warning" onclick="fetchData();">
+          <button
+            class="btn btn-warning"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapseExample"
+            aria-expanded="false"
+            aria-controls="collapseExample"
+          >
+            Search Activity
+          </button>
+          <div class="collapse" id="collapseExample">
+            <form>
+              <label for="participantsInput">Participants</label>
+              <input id="participantsInput" />
+              <input />
+
+              <input />
+            </form>
+          </div>
+
+          <button class="btn btn-warning" onclick="fetchData()">
             Random Activity
           </button>
         </div>
