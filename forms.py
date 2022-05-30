@@ -33,4 +33,7 @@ class SavedActivityForm(FlaskForm):
     participants = HiddenField(name="activityParticipants")
     price = HiddenField(name="activityPrice")
         
+class ActivitySearchCriteria(FlaskForm):
+    """Activity Criteria form."""
+    
     
