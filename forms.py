@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from sqlalchemy import Float
-from wtforms import StringField, PasswordField, HiddenField, FloatField, IntegerField
-from wtforms.validators import DataRequired, Email, Length
+from wtforms import StringField, PasswordField, HiddenField, FloatField, IntegerField, SelectMultipleField, IntegerRangeField, DecimalRangeField
+from wtforms.validators import DataRequired, Email, Length, NumberRange
 
 class UserAddForm(FlaskForm):
     """Form for adding users."""
@@ -36,4 +36,7 @@ class SavedActivityForm(FlaskForm):
 class ActivitySearchCriteria(FlaskForm):
     """Activity Criteria form."""
     
+    participants = IntegerRangeField("Participants (1 to 3+)", id="formParticipants",validators=[NumberRange(min=1, max=3)], default=1)
+    price = DecimalRangeField("Price Range (from free to $$$)", id="formPrice",validators=[NumberRange(min=0, max=1)], places=.01, default=1)
+    activityType = SelectMultipleField("Activity Type", id="formActivityType",choices=[("busywork", "Busywork"), ("charity", "Charity"), ("cooking", "Cooking"), ("diy", "DIY"), ("education", "Education"), ("music", "Music"), ("recreational", "Recreational"), ("relaxation", "Relaxation"), ("social", "Social")], default=["education", "recreational", "social", "diy", "charity", "cooking", "relaxation", "music", "busywork"])
     

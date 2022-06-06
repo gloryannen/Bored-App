@@ -8,9 +8,11 @@ from flask import (
     g,
     url_for,
 )
+import json
 import requests
+from activity_helper import *
 from models import db, User, User_Activity, Saved_Activity
-from forms import UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm
+from forms import UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm, ActivitySearchCriteria
 from sqlalchemy.exc import IntegrityError
 from API import BORED_API
 
@@ -169,6 +171,8 @@ def handle_ignored_activity():
 def users_show(user_id):
     """Show user profile."""
     
+    form = ActivitySearchCriteria()
+    
     user = User.query.get_or_404(user_id)
     
     if g.user.username != user.username:
@@ -176,7 +180,7 @@ def users_show(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/login")
     
-    return render_template("user/profile.html", user=user)
+    return render_template("user/profile.html", user=user, form=form)
 
 
 @bp_routes.route("/user/delete", methods=["POST"])
@@ -206,7 +210,83 @@ def get_random_activity():
     
     resp = requests.get(BORED_API)
     data = resp.json()
+    return data    
+
+@bp_routes.route("/api/activity2", methods=["GET","POST"])
+def get_searched_activity():
+    """Activity page"""
+    
+    form=ActivitySearchCriteria()
+    
+    typeValues=form.activityType.data[0].split(",")
+    randomVariables = assignRandVariable(form.price.data, form.participants.data, typeValues)
+        
+    print("----------------------",randomVariables.participants, randomVariables.price, randomVariables.type, "----------------------")
+  
+
+    resp = requests.get(f"{BORED_API}?minprice=0&maxprice={randomVariables.price}&participants={randomVariables.participants}&type={randomVariables.type}")
+    data = resp.json()
+    if "error" in data:
+        maxRetry = 20
+        for x in range(maxRetry):
+            tryRandomVariables = assignRandVariable(form.price.data, form.participants.data, typeValues)
+            
+            
+            testresp = requests.get(f"{BORED_API}?minprice=0&maxprice={tryRandomVariables.price}&participants={tryRandomVariables.participants}&type={tryRandomVariables.type}")
+            print("----------------------",tryRandomVariables.participants, tryRandomVariables.price, tryRandomVariables.type, "----------------------")
+            testdata= testresp.json()
+            
+            if "error" not in testdata:
+                return testdata
+        
+        return "Tried but no data found"
+        
+    print("++++++++++++++", data, "++++++++++++++++++")
     return data
+    
 
 
 # endregion
+
+
+# Submit button sends GET request to DB api
+# DB api sends GET request to BORED API with PARAMS
+# DB returns data from API request
+# JS loads data in HTML
+
+#----
+# Submit form sends GET request with criteria/params to database
+# Database sends GET request to BORED API with params
+# BORED API responds with Activity
+# Database compares if Activity key is on ignored/saved/completed
+    # If ignored/saved/completed -> grab new activity from BORED api
+# Else, DB returns data from API request
+# JS loads data in HTML
+
+# def assignRandVariable(price, participants, type):
+#     valuesToReturn = RandomProps()
+#     # Round to 2 decimals points.
+#     # Bored API only accepts up to 2 decimal places. Min/Max values -> [0, 1]
+#     valuesToReturn.price = round(Decimal(price), 2)
+    
+#     # participants = form.participants.data
+#     # Randomize participants if 3+ is selected in the form. 
+#     # Bored API has some activities for more than 3 people.
+#     if participants == "3":
+#         nums = ["3", "4", "5","8"]
+#         valuesToReturn.participants = random.choice(nums)
+#     else:
+#         valuesToReturn.participants = participants    
+ 
+#     # type = form.activityType.data
+#     # Randomize activity if multiple are selected.
+#     valuesToReturn.type= random.choice(type) 
+    
+#     return valuesToReturn
+
+# class RandomProps:
+#     price = None
+#     participants = None
+#     type = list
+    
+    
