@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% block title %}Ignored Activities{% endblock %} {% block content
+    %}
+    
+    <div class="container">
+      <div class="row">
+        <div class="col" id="activity">
+          <h1 class="text-center my-3 display-2">Ignored Activities</h1>
+          <div class="mb-3 ">
+            <div class="list-group col-6 mx-auto">
+              {% for a in activities %}
+                <a href="/user/{{g.user.id}}/activity/{{a.id}}" class="list-group-item list-group-item-action" aria-current="true">
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <p class="mb-1">{{ a.title }}</p>
+                    <form method="POST" action="/activity/{{ a.id }}/remove">
+                      <button class="btn btn-outline-danger" >
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                        </button>
+                  </div>
+            {% endfor %}            
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if not activities %}
+      <h4 class="display-6 text-center align-middle text-warning">No ignored activities.</h4>
+      {% endif %}
+    </div>
+    
+    {% endblock %}
+    

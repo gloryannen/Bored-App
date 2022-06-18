@@ -1,12 +1,23 @@
-{% extends 'base.html' %} {% block title %}Home{% endblock %} {% block content
-%}
+{% extends 'base.html' %} {% block title %}Home {% endblock %} {% block
+content%}
 
-<div class="container">
-  <div class="row">
-    <div class="col" id="activity">
-      <h1>Welcome</h1>
-    </div>
-  </div>
+<div class="container m-5">
+  <h1 class="my-3 display-3">
+    Hello adventurer, <br />feel like curing your boredom?
+  </h1>
+  <p>
+    By signing up, you are able to save activities, complete them, and ignored
+    those you don't feel like doing ever... or maybe not for a while.
+  </p>
+
+  <h3 class="display-5 text-center text-warning fw-bold my-5">
+    {{data.activity}}
+  </h3>
 </div>
 
-{% endblock %}
+{% if not g.user %}
+<div class="my-5 d-flex justify-content-center">
+  <a class="btn btn-success btn-lg mx-3" href="/login">Log in</a>
+  <a class="btn btn-outline-success btn-lg" href="/signup">Sign up</a>
+</div>
+{% endif %} {% endblock %}

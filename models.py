@@ -13,7 +13,7 @@ db = SQLAlchemy()
 class User(db.Model):
     """User in the system."""
 
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(
         db.Integer,
@@ -38,12 +38,14 @@ class User(db.Model):
         db.Text,
         nullable=False,
     )
-   
+    
+    user_activities = db.relationship("User_Activity")
+    ignored_activities= db.relationship("Ignored_Activity")
+
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
-  
     @classmethod
     def signup(cls, username, email, password):
         """Sign up user.
@@ -51,12 +53,12 @@ class User(db.Model):
         Hashes password and adds user to system.
         """
 
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
 
         user = User(
             username=username,
             email=email,
-            password=hashed_pwd,   
+            password=hashed_pwd,
         )
 
         db.session.add(user)
@@ -82,90 +84,42 @@ class User(db.Model):
 
         return False
 
+
 class User_Activity(db.Model):
     """User Activities in the system."""
-    
+
     __tablename__ = "user_activities"
-    
+
     id = db.Column(
         db.Integer,
         autoincrement=True,
         primary_key=True,
         unique=True,
     )
-    
+
     key = db.Column(
         db.Integer,
+        unique=True,
     )
 
     title = db.Column(
         db.Text,
         nullable=False,
     )
-    
+
     type = db.Column(
         db.Text,
         nullable=False,
     )
-    
+
     participants = db.Column(
         db.Integer,
         default="1",
     )
-    
+
     price = db.Column(
         db.Float,
         default="0.0",
-    )
-    
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id",  ondelete="cascade"),
-    )
-
-    ignored_activities = db.relationship("User_Activity",
-                                         secondary="ignored_activities",)
-    complete_activities = db.relationship("User_Activity",
-                                          secondary="completed_activities",)
-        
-class Saved_Activity(db.Model):
-    """User saved activities"""
-    
-    __tablename__ = "saved_activities"
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-    
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
-    )
-    
-    user_activity_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user_activities.id", ondelete="cascade"),
-    )
-   
-
-class Completed_Activity(db.Model):
-    """User completed activities"""
-    
-    __tablename__ = "completed_activities"
-    
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-    
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
-    )
-    
-    user_activity_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user_activities.id", ondelete="cascade"),
     )
     
     timestamp = db.Column(
@@ -174,31 +128,23 @@ class Completed_Activity(db.Model):
         default=datetime.utcnow(),
     )
     
-class Ignored_Activity(db.Model):
-    """User ignored activities"""
-    
-    __tablename__ = "ignored_activities"
-    
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
+    isCompleted = db.Column(
+        db.Boolean,
+        default=False
     )
-    
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
     )
     
-    user_activity_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user_activities.id", ondelete="cascade"),
-    )
-    
-class Tag(db.Model):
-    """Tags created by users."""   
-    
-    __tablename__ = "tags"
-    
+    user= db.relationship("User")    
+
+class Ignored_Activity(db.Model):
+    """User ignored activities"""
+
+    __tablename__ = "ignored_activities"
+
     id = db.Column(
         db.Integer,
         primary_key=True,
@@ -206,64 +152,96 @@ class Tag(db.Model):
     
     title = db.Column(
         db.Text,
+        nullable=False,
     )
     
+    key = db.Column(
+        db.Integer,
+        unique=True,
+    )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
     )
     
+    user= db.relationship("User")
+        
+    
+
+
+
+class Tag(db.Model):
+    """Tags created by users."""
+
+    __tablename__ = "tags"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    title = db.Column(
+        db.Text,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="cascade"),
+    )
+
+
 class Activities_Tag(db.Model):
     """Tags in Activities."""
-    
+
     __tablename__ = "activities_tag"
-    
+
     user_activities_id = db.Column(
         db.Integer,
         db.ForeignKey("user_activities.id", ondelete="cascade"),
         primary_key=True,
     )
-    
+
     tag_id = db.Column(
         db.Integer,
         db.ForeignKey("tags.id"),
         primary_key=True,
     )
-    
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
         primary_key=True,
     )
-    
+
+
 class Activity_Note(db.Model):
     """Notes created by user."""
-    
+
     __tablename__ = "activity_notes"
-    
+
     id = db.Column(
         db.Integer,
         primary_key=True,
     )
-    
+
     note = db.Column(
         db.Text,
     )
-    
+
     user_activities_id = db.Column(
         db.Integer,
         db.ForeignKey("user_activities.id", ondelete="cascade"),
         primary_key=True,
     )
-    
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="cascade"),
         primary_key=True,
     )
-    
-    
-    
+
+
 def connect_db(app):
     """Connect db to app"""
     db.app = app

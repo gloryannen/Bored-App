@@ -10,9 +10,10 @@ from flask import (
 )
 import json
 import requests
+from datetime import datetime
 from activity_helper import *
-from models import db, User, User_Activity, Saved_Activity
-from forms import UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm, ActivitySearchCriteria
+from models import db, User, User_Activity, Ignored_Activity
+from forms import IsCompleted, UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm, ActivitySearchCriteria, IgnoreActivityForm
 from sqlalchemy.exc import IntegrityError
 from API import BORED_API
 
@@ -89,7 +90,7 @@ def login():
         
         if user:
             do_login(user)
-            flash(f"Hello, {user.username}!", "success")
+            flash(f"Welcome, {user.username}!", "success")
             return redirect("/")
 
         flash("Invalid credentials.", 'danger')
@@ -109,26 +110,82 @@ def logout():
 
 # region Main Routes
 
-
 @bp_routes.route("/")
-def index():
+def homepage():
     
-    return render_template("home.html")
+    """Show homepage and load random activity"""
+    
+    resp = requests.get(BORED_API)
+    data = resp.json()
+    
+    return render_template('home.html', data=data)
+        
+@bp_routes.route("/user/<int:user_id>")
+def index(user_id):
+    user = User.query.get_or_404(user_id)
+    
+    return render_template("user/profile.html", user=user)
 
 
-@bp_routes.route("/user/<int:user_id>/activity")
-def activity_page(user_id):
-    """Activity page"""
+@bp_routes.route("/user/<int:user_id>/saved_activity")
+def saved_activity_page(user_id):
+    """Saved activity page"""
     
     user = User.query.get_or_404(user_id)
-    if g.user.username != user.username:
+    if g.user.id != user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect(f"/user/{g.user.id}")
+
+    activities = (User_Activity.query.filter(User_Activity.user_id == user_id).order_by(User_Activity.isCompleted == False, User_Activity.timestamp.asc()).limit(30).all())
+    
+    return render_template("activities/activity.html", user=user, activities=activities)
+
+@bp_routes.route("/user/<int:user_id>/completed_activities")
+def completed_activity_page(user_id):
+    """Completed activity page"""
+    
+    user = User.query.get_or_404(user_id)
+    if g.user.id != user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect(f"/user/{g.user.id}")
+    
+    completed = (User_Activity.query.filter(User_Activity.user_id == user_id, User_Activity.isCompleted == True).limit(30).all())
+    
+    return render_template("activities/completed_activities.html", user=user, completed=completed)
+
+
+
+@bp_routes.route("/user/<int:user_id>/ignored_activities")
+def ignored_activity_page(user_id):
+    """Ignored activity page"""
+    
+    user = User.query.get_or_404(user_id)
+    if g.user.id != user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect(f"/user/{g.user.id}")
+    
+    activities = (Ignored_Activity.query.filter(Ignored_Activity.user_id == user_id).limit(30).all())
+    
+    return render_template("activities/ignored_activities.html", user=user, activities=activities)
+
+@bp_routes.route("/activity/<int:ignored_activities_id>/remove", methods=["Post"])
+def remove_activity(ignored_activities_id):
+    """Remove activity from ignored list."""
+    
+    if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    
-    activities = (User_Activity.query.filter(User_Activity.user_id == user_id).limit(30).all())
-   
-    return render_template("activity.html", user=user, activities=activities)
 
+    activity = Ignored_Activity.query.get_or_404(ignored_activities_id)
+    
+    if activity.user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect(f"/user/{g.user.id}")
+    
+    db.session.delete(activity)
+    db.session.commit()
+
+    return redirect(f"/user/{g.user.id}/ignored_activities")
 
 @bp_routes.route("/activity/save", methods=(["POST"]))
 def handle_saved_activity():
@@ -149,38 +206,77 @@ def handle_saved_activity():
         key=form.key.data,
         user_id=user.id,
     )
-
     db.session.add(user_activity)
     db.session.commit()
-
-    return redirect(f"/user/{user.id}/activity")
+    print (user_activity.id)
+ 
+    return redirect(f"/user/{user.id}/new_activity")
 
 
 @bp_routes.route("/activity/ignore", methods=(["POST"]))
 def handle_ignored_activity():
     """Ignore activity on DB"""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    form = IgnoreActivityForm()
+    user = g.user
+    
+    ignored_activity = Ignored_Activity(
+        title=form.title.data,
+        key=form.key.data,
+        user_id=user.id,
+    )
 
-    return redirect("activity.html")
+    db.session.add(ignored_activity)
+    db.session.commit()
+
+    return redirect(f"/user/{user.id}/new_activity")
 
 
 # endregion
 
 # region User Routes
 
-@bp_routes.route("/user/<int:user_id>", methods=(["GET"]))
-def users_show(user_id):
-    """Show user profile."""
+@bp_routes.route("/user/<int:user_id>/new_activity", methods=(["GET"]))
+def new_activity(user_id):
+    """New activity page."""
     
     form = ActivitySearchCriteria()
     
     user = User.query.get_or_404(user_id)
     
-    if g.user.username != user.username:
+    if g.user.id != user.id:
 
         flash("Access unauthorized.", "danger")
         return redirect("/login")
     
-    return render_template("user/profile.html", user=user, form=form)
+    return render_template("activities/new_activity.html", form=form)
+
+@bp_routes.route('/user/<int:user_id>/profile_update', methods=["GET", "POST"])
+def profile_update(user_id):
+    """Update profile for current user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    
+    form = UpdateUserForm(obj=user)
+    
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+        
+            db.session.commit()
+            return redirect(f"/user/{user.id}")
+        flash("Password incorrect, try again", "danger")
+    
+    return render_template('/user/edit.html', user_id=user.id, form=form)
 
 
 @bp_routes.route("/user/delete", methods=["POST"])
@@ -243,6 +339,35 @@ def get_searched_activity():
         
     print("++++++++++++++", data, "++++++++++++++++++")
     return data
+
+@bp_routes.route("/api/set_completed", methods=["GET","POST"])
+def set_completed_activity():
+    """Handle completed/uncompleted activity"""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
+    
+    form=IsCompleted()
+    
+    id = form.id.data
+    isCompleted = form.isCompleted.data
+    
+    activity=User_Activity.query.get(id)
+    activity.isCompleted = isCompleted
+    activity.timestamp = datetime.utcnow()
+    
+    db.session.commit()
+    print("++++++++++++++++++++++++",form.isCompleted, form.id, "+++++++++++++++++++++++")
+    
+    return (f"Completed")
+    # setCompleted = User_Activity.query.filter(id=id).update(isCompleted=data.get(checked))
+    # db.session.add(setCompleted)
+    # db.session.commit()
+ 
+    # return redirect(f"/user/{user.id}")
     
 
 

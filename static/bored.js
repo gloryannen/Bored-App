@@ -4,7 +4,6 @@ $(document).ready(function () {
     });
 });
 
-
 async function fetchData() {
     try {
         let $activityContainer = $("#activityContainer");
@@ -53,21 +52,21 @@ function populateData(data) {
     } else {
         let $item = (
             `
-                <div class="mx-3 container text-center">
+                <div class="mx-3 my-3 container text-center">
                     <ul class="list-group">
                         <H3>${data.activity}</H3>
                         <li class="list-group-item"><b>Participants</b> - ${data.participants}</li>
                         <li class="list-group-item"><b>Price Range</b> - ${data.price}</li>
                         <li class="list-group-item"><b>Type</b> - ${data.type}</li>
                     </ul>
-                    <form method="POST" action="/activity/save" class="form-inline">
+                    <form method="POST" class="form-inline">
                         <input type="hidden" name="activityKey" value="${data.key}"/>
                         <input type="hidden" name="activityTitle" value="${data.activity}"/>
                         <input type="hidden" name="activityParticipants" value="${data.participants}"/>
                         <input type="hidden" name="activityPrice" value="${data.price}"/>
                         <input type="hidden" name="activityType" value="${data.type}"/>
-                        <button class="btn btn-success ml-2 mt-3" type="submit">Save</button>
-                        <button class="btn btn-danger ml-2 mt-3" type="submit">Ignore</button>
+                        <button class="btn btn-success ml-2 mt-3" type="submit" formaction="/activity/save">Save</button>
+                        <button class="btn btn-danger ml-2 mt-3" type="submit" formaction="/activity/ignore">Ignore</button>
                     </form>
                 </div>
                 `
@@ -77,8 +76,6 @@ function populateData(data) {
         $activityContainer.append($activityDiv)
     }
 }
-
-
 
 async function getSearchCriteria() {
     let $activityContainer = $("#activityContainer");
@@ -124,5 +121,33 @@ async function getSearchCriteria() {
         .catch(function (response) {
             //handle error
             console.log(response);
+        });
+}
+
+function setCompleted(id) {
+    console.log(id)
+    let activity_Id = document.getElementById(id)
+    let checked = document.getElementById(id).checked;
+    console.log(checked)
+    let bodyFormData = new FormData();
+    bodyFormData.append("activity_Id", id)
+    bodyFormData.append("isCompleted", checked)
+    axios({
+            method: "post",
+            url: "/api/set_completed",
+            data: bodyFormData,
+            headers: {
+                "Content-Type": "multipart/form-data"
+            },
+        }).then(function (resp) {
+            //handle success
+
+
+            console.log(resp)
+
+        })
+        .catch(function (resp) {
+            //handle error
+            console.log(resp);
         });
 }
