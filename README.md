@@ -2,7 +2,7 @@
 
 # Link to Application
 
-https://herokuapp.com/login
+https://bored-by-lenuvia.herokuapp.com
 
 ## Description
 
@@ -62,9 +62,9 @@ The applications will always running on http://localhost:5000.
 
 ## Roadmap
 
-- [] Add Tags
-- [] Add Friends and ability to check their activities
-- [] Share activities with Friends
+- [ ] Add Tags
+- [ ] Add Friends and ability to check their activities
+- [ ] Share activities with Friends
 
 # Bored API
 
