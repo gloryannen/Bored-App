@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from sqlalchemy import Float, Integer
-from wtforms import StringField, PasswordField, HiddenField, FloatField, IntegerField, SelectMultipleField, IntegerRangeField, DecimalRangeField, BooleanField
+from wtforms import StringField, PasswordField, HiddenField, IntegerField, SelectMultipleField, IntegerRangeField, DecimalRangeField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange
 
 class UserAddForm(FlaskForm):
@@ -50,3 +50,10 @@ class IsCompleted(FlaskForm):
     """Handle completed activity"""
     id= IntegerField(name="activity_Id")
     isCompleted=BooleanField(name="isCompleted")
+    
+class NoteForm(FlaskForm):
+    """Add note"""
+    
+    id = HiddenField(name="activityId")
+    note = TextAreaField(name="noteArea")
+    

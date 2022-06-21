@@ -7,7 +7,7 @@
       <h1 class="display-2">New Activity</h1>
       <div class="mb-3">
         <div class="form-group">
-          <button class="btn btn-warning" onclick="fetchData()">
+          <button class="btn btn-warning mx-2" onclick="fetchData()">
             Random Activity
           </button>
 
@@ -25,9 +25,9 @@
           <div class="collapse" id="collapseExample">
             <div class="container my-3">
               <div class="row justify-content-center">
-                <div class="col-4">
+                <div class="col-6">
                   <form action="/api/activity" id="activityForm" method="GET">
-                    {{ form.hidden_tag() }}
+                    {{ form.csrf_token() }}
                     <div class="form-group">
                       {{ form.participants.label(class="my-3")}}
                       {{form.participants(class="form-range") }}
@@ -46,7 +46,7 @@
 
                     <button
                       type="submit"
-                      class="btn btn-success mt-3"
+                      class="btn btn-success mt-3 mx-2"
                       id="searchSubmitBtn"
                       onclick="getSearchCriteria()"
                     >

@@ -2,18 +2,17 @@ from flask import (
     Blueprint,
     render_template,
     redirect,
-    request,
     flash,
     session,
     g,
-    url_for,
+    
 )
 import json
 import requests
 from datetime import datetime
 from activity_helper import *
 from models import db, User, User_Activity, Ignored_Activity
-from forms import IsCompleted, UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm, ActivitySearchCriteria, IgnoreActivityForm
+from forms import IsCompleted, UserAddForm, LoginForm, UpdateUserForm, SavedActivityForm, ActivitySearchCriteria, IgnoreActivityForm, NoteForm
 from sqlalchemy.exc import IntegrityError
 from API import BORED_API
 
@@ -102,8 +101,9 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    do_logout()
-    flash("You've been logged out successfully.", "success")
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+        flash(f"You have successfully logged out!", "success")
     return redirect("/login")
 
 # endregion
@@ -112,7 +112,6 @@ def logout():
 
 @bp_routes.route("/")
 def homepage():
-    
     """Show homepage and load random activity"""
     
     resp = requests.get(BORED_API)
@@ -122,47 +121,88 @@ def homepage():
         
 @bp_routes.route("/user/<int:user_id>")
 def index(user_id):
+    """Show user profile with activity summary"""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    if g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
     user = User.query.get_or_404(user_id)
     
-    return render_template("user/profile.html", user=user)
+    completed = (User_Activity.query.filter(User_Activity.user_id == user_id, User_Activity.isCompleted == True).all())
+    
+    return render_template("user/profile.html", user=user, completed=completed)
 
 
 @bp_routes.route("/user/<int:user_id>/saved_activity")
 def saved_activity_page(user_id):
     """Saved activity page"""
     
-    user = User.query.get_or_404(user_id)
-    if g.user.id != user.id:
+    if not g.user:
         flash("Access unauthorized.", "danger")
-        return redirect(f"/user/{g.user.id}")
-
-    activities = (User_Activity.query.filter(User_Activity.user_id == user_id).order_by(User_Activity.isCompleted == False, User_Activity.timestamp.asc()).limit(30).all())
+        return redirect("/")
+    
+    if g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
+    
+    activities = (User_Activity.query.filter(User_Activity.user_id == user_id).order_by(User_Activity.isCompleted == False, User_Activity.timestamp.asc()).all())
     
     return render_template("activities/activity.html", user=user, activities=activities)
 
-@bp_routes.route("/user/<int:user_id>/completed_activities")
+@bp_routes.route("/user/<int:user_id>/completed_activities", methods=["GET", "POST"])
 def completed_activity_page(user_id):
     """Completed activity page"""
     
-    user = User.query.get_or_404(user_id)
-    if g.user.id != user.id:
+    if not g.user:
         flash("Access unauthorized.", "danger")
-        return redirect(f"/user/{g.user.id}")
+        return redirect("/")
     
-    completed = (User_Activity.query.filter(User_Activity.user_id == user_id, User_Activity.isCompleted == True).limit(30).all())
+    if g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
     
-    return render_template("activities/completed_activities.html", user=user, completed=completed)
+    form=NoteForm()
+  
+    completed = (User_Activity.query.filter(User_Activity.user_id == user_id, User_Activity.isCompleted == True).all())
+    
+    return render_template("activities/completed_activities.html", completed=completed, form=form)
 
+@bp_routes.route("/activity_completed/<int:user_activities_id>/remove", methods=["Post"])
+def remove_completed_activity(user_activities_id):
+    """Remove activity from completed list."""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
+    activity = User_Activity.query.get_or_404(user_activities_id)
+    
+    db.session.delete(activity)
+    db.session.commit()
+    flash("Activity has been removed.", "success")
+
+    return redirect(f"/user/{g.user.id}/completed_activities")
 
 @bp_routes.route("/user/<int:user_id>/ignored_activities")
 def ignored_activity_page(user_id):
     """Ignored activity page"""
     
-    user = User.query.get_or_404(user_id)
-    if g.user.id != user.id:
+    if not g.user:
         flash("Access unauthorized.", "danger")
-        return redirect(f"/user/{g.user.id}")
+        return redirect("/")
+    
+    if g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
     
     activities = (Ignored_Activity.query.filter(Ignored_Activity.user_id == user_id).limit(30).all())
     
@@ -178,12 +218,9 @@ def remove_activity(ignored_activities_id):
 
     activity = Ignored_Activity.query.get_or_404(ignored_activities_id)
     
-    if activity.user_id != g.user.id:
-        flash("Access unauthorized.", "danger")
-        return redirect(f"/user/{g.user.id}")
-    
     db.session.delete(activity)
     db.session.commit()
+    flash("Activity has been removed.", "success")
 
     return redirect(f"/user/{g.user.id}/ignored_activities")
 
@@ -195,8 +232,8 @@ def handle_saved_activity():
         flash("Access unauthorized.", "danger")
         return redirect("/")
     
-    form = SavedActivityForm()
     user = g.user
+    form = SavedActivityForm()
 
     user_activity = User_Activity(
         title=form.title.data,
@@ -208,7 +245,7 @@ def handle_saved_activity():
     )
     db.session.add(user_activity)
     db.session.commit()
-    print (user_activity.id)
+    flash("Activity has been saved.", "success")
  
     return redirect(f"/user/{user.id}/new_activity")
 
@@ -232,6 +269,7 @@ def handle_ignored_activity():
 
     db.session.add(ignored_activity)
     db.session.commit()
+    flash("Activity has been ignored.", "success")
 
     return redirect(f"/user/{user.id}/new_activity")
 
@@ -244,14 +282,15 @@ def handle_ignored_activity():
 def new_activity(user_id):
     """New activity page."""
     
-    form = ActivitySearchCriteria()
-    
-    user = User.query.get_or_404(user_id)
-    
-    if g.user.id != user.id:
-
+    if not g.user:
         flash("Access unauthorized.", "danger")
-        return redirect("/login")
+        return redirect("/")
+    
+    if g.user.id != user_id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+ 
+    form = ActivitySearchCriteria()
     
     return render_template("activities/new_activity.html", form=form)
 
@@ -260,6 +299,10 @@ def profile_update(user_id):
     """Update profile for current user."""
 
     if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    if g.user.id != user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
@@ -297,6 +340,29 @@ def delete_user():
 
 # endregion
 
+# region Note Routes
+@bp_routes.route("/note/add", methods=(["GET","POST"]))
+def add_note():
+    """Add note to activity"""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
+    form = NoteForm()
+    
+    id = form.id.data
+    note = form.note.data
+    
+    activity=User_Activity.query.get(id)
+    activity.note = note
+    
+    db.session.commit()
+    
+    return redirect(f"/user/{user.id}/completed_activities")
+
+# endregion
 
 # region API Routes
 
@@ -304,40 +370,76 @@ def delete_user():
 def get_random_activity():
     """Activity page"""
     
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
     resp = requests.get(BORED_API)
     data = resp.json()
+    ignored = Ignored_Activity.query.filter(Ignored_Activity.user_id == user.id).all()
+    isIgnored = False
+    for x in ignored:
+            if int(x.key) == int(data['key']):
+                isIgnored = True
+    
+    if isIgnored:
+        maxRetry= 3
+        for x in range(maxRetry):
+            newResp = requests.get(BORED_API)
+            newData = newResp.json()
+            setIgnored = False
+            for x in ignored:
+                if int(x.key) == int(data['key']):
+                    setIgnored = True
+            
+            if not setIgnored:
+                return newData
+            
+        return "Tried but no data found"
     return data    
 
 @bp_routes.route("/api/activity2", methods=["GET","POST"])
 def get_searched_activity():
     """Activity page"""
     
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
     form=ActivitySearchCriteria()
     
     typeValues=form.activityType.data[0].split(",")
     randomVariables = assignRandVariable(form.price.data, form.participants.data, typeValues)
-        
-    print("----------------------",randomVariables.participants, randomVariables.price, randomVariables.type, "----------------------")
-  
 
     resp = requests.get(f"{BORED_API}?minprice=0&maxprice={randomVariables.price}&participants={randomVariables.participants}&type={randomVariables.type}")
     data = resp.json()
-    if "error" in data:
+    ignored = Ignored_Activity.query.filter(Ignored_Activity.user_id == user.id).all()
+    isIgnored = False
+    if "key" in data:
+        for x in ignored:
+            if int(x.key) == int(data['key']):
+                isIgnored = True
+        
+    if "error" in data or isIgnored:
         maxRetry = 20
         for x in range(maxRetry):
             tryRandomVariables = assignRandVariable(form.price.data, form.participants.data, typeValues)
             
-            
             testresp = requests.get(f"{BORED_API}?minprice=0&maxprice={tryRandomVariables.price}&participants={tryRandomVariables.participants}&type={tryRandomVariables.type}")
-            print("----------------------",tryRandomVariables.participants, tryRandomVariables.price, tryRandomVariables.type, "----------------------")
             testdata= testresp.json()
+            testignored = False
+            if "key" in testdata:
+                for x in ignored:
+                    if int(x.key) == int(testdata['key']):
+                        testignored = True
             
-            if "error" not in testdata:
+            if "error" not in testdata or testignored:
                 return testdata
         
         return "Tried but no data found"
         
-    print("++++++++++++++", data, "++++++++++++++++++")
     return data
 
 @bp_routes.route("/api/set_completed", methods=["GET","POST"])
@@ -347,8 +449,6 @@ def set_completed_activity():
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    
-    user = g.user
     
     form=IsCompleted()
     
@@ -360,58 +460,5 @@ def set_completed_activity():
     activity.timestamp = datetime.utcnow()
     
     db.session.commit()
-    print("++++++++++++++++++++++++",form.isCompleted, form.id, "+++++++++++++++++++++++")
-    
-    return (f"Completed")
-    # setCompleted = User_Activity.query.filter(id=id).update(isCompleted=data.get(checked))
-    # db.session.add(setCompleted)
-    # db.session.commit()
- 
-    # return redirect(f"/user/{user.id}")
-    
-
 
 # endregion
-
-
-# Submit button sends GET request to DB api
-# DB api sends GET request to BORED API with PARAMS
-# DB returns data from API request
-# JS loads data in HTML
-
-#----
-# Submit form sends GET request with criteria/params to database
-# Database sends GET request to BORED API with params
-# BORED API responds with Activity
-# Database compares if Activity key is on ignored/saved/completed
-    # If ignored/saved/completed -> grab new activity from BORED api
-# Else, DB returns data from API request
-# JS loads data in HTML
-
-# def assignRandVariable(price, participants, type):
-#     valuesToReturn = RandomProps()
-#     # Round to 2 decimals points.
-#     # Bored API only accepts up to 2 decimal places. Min/Max values -> [0, 1]
-#     valuesToReturn.price = round(Decimal(price), 2)
-    
-#     # participants = form.participants.data
-#     # Randomize participants if 3+ is selected in the form. 
-#     # Bored API has some activities for more than 3 people.
-#     if participants == "3":
-#         nums = ["3", "4", "5","8"]
-#         valuesToReturn.participants = random.choice(nums)
-#     else:
-#         valuesToReturn.participants = participants    
- 
-#     # type = form.activityType.data
-#     # Randomize activity if multiple are selected.
-#     valuesToReturn.type= random.choice(type) 
-    
-#     return valuesToReturn
-
-# class RandomProps:
-#     price = None
-#     participants = None
-#     type = list
-    
-    

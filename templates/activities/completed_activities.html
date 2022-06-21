@@ -1,0 +1,97 @@
+{% extends 'base.html' %} {% block title %}Completed Activities{% endblock %} {%
+block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col" id="activity">
+      <h1 class="text-center my-3 display-2">Completed Activities</h1>
+      <div class="mb-3">
+        <!--Modal-->
+        <div
+          id="ModalNoteForm"
+          class="modal fade"
+          tabindex="-2"
+          aria-labelledby="ModalNoteForm"
+          aria-hidden="true"
+        >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header justify-content-center">
+              <h1 class="modal-title">Add Note</h1>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="/note/add">
+                <input type="hidden" name="activityId" id="activityId"/>
+                <textarea class="form-control" name="noteArea" id="noteArea" rows="3"></textarea>
+              </div>
+              <div class="modal-footer my-3">
+                <div class="d-flex">
+                  <button
+                    type="button"
+                    class="btn btn-danger mx-2"
+                    data-bs-dismiss="modal"
+                  >Close</button>
+                  <button type="submit" class="btn btn-success">Save Note</button>
+                </div>
+              </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Modal end-->
+      <div class="table-responsive-lg mx-auto">
+        {% if completed %}
+        <table class="table dt-responsive">
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Note</th>
+              <th scope="col">Actions</th>
+              <th scope="col">Date Completed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in completed %}
+            <tr>
+              <td>{{ a.title }}</td>
+              <td id="note{{ a.id }}">{{a.note}}</td>
+              <td>
+                  <div class="d-flex">
+                    <form
+                      class="form-inline"
+                      method="POST"
+                      action="/activity_completed/{{ a.id }}/remove"
+                    >
+                      <button class="btn btn-outline-danger">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                      </button>
+                    </form>
+                    <button
+                      type="button"
+                      class="btn btn-outline-success mx-1"
+                      data-bs-toggle="modal"
+                      data-bs-target="#ModalNoteForm"
+                      onClick="populateNote({{a.id}})"
+                    >
+                      <i class="fa fa-clipboard" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+                <td class="">{{a.timestamp.strftime('%m/%d/%Y, %H:%M:%S')}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <h4 class="display-6 text-center align-middle text-warning">
+    No saved activities.
+  </h4>
+  {% endif %}
+</div>
+
+{% endblock %}

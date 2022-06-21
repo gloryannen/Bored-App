@@ -5,6 +5,7 @@ $(document).ready(function () {
 });
 
 async function fetchData() {
+    // Get Data from server API and load to HTML
     try {
         let $activityContainer = $("#activityContainer");
         $activityContainer.hide()
@@ -18,25 +19,23 @@ async function fetchData() {
         activities = [];
         activities.push(data)
 
-        console.log("INSIDE fetchData", data)
-
         populateData(data)
 
         $spinDiv.hide()
         $activityContainer.show()
 
-    } catch (e) {
-        console.log(e)
+    } catch (error) {
+        throw(error)
     }
 }
 
 function populateData(data) {
+    // Load data from API to HTML
     $(".activity-list").remove()
     let $activityContainer = $("#activityContainer");
     const $activityDiv = $("<div>");
     $activityDiv.addClass("activity-list")
     $(".activity-list").empty();
-    console.log("INSIDE populateData", data)
     if (data.activity == undefined) {
         let $noActivityMsg = (
             `
@@ -55,9 +54,8 @@ function populateData(data) {
                 <div class="mx-3 my-3 container text-center">
                     <ul class="list-group">
                         <H3>${data.activity}</H3>
-                        <li class="list-group-item"><b>Participants</b> - ${data.participants}</li>
-                        <li class="list-group-item"><b>Price Range</b> - ${data.price}</li>
-                        <li class="list-group-item"><b>Type</b> - ${data.type}</li>
+                        <li class="list-group-item border-0"><b><i class="fa fa-users" aria-hidden="true"></i></b> ${data.participants}</li>
+                        <li class="list-group-item border-0"><b><i class="fa fa-tags" aria-hidden="true"></i></b> ${data.type}</li>
                     </ul>
                     <form method="POST" class="form-inline">
                         <input type="hidden" name="activityKey" value="${data.key}"/>
@@ -65,7 +63,7 @@ function populateData(data) {
                         <input type="hidden" name="activityParticipants" value="${data.participants}"/>
                         <input type="hidden" name="activityPrice" value="${data.price}"/>
                         <input type="hidden" name="activityType" value="${data.type}"/>
-                        <button class="btn btn-success ml-2 mt-3" type="submit" formaction="/activity/save">Save</button>
+                        <button class="btn btn-success ml-2 mt-3 mx-2" type="submit" formaction="/activity/save">Save</button>
                         <button class="btn btn-danger ml-2 mt-3" type="submit" formaction="/activity/ignore">Ignore</button>
                     </form>
                 </div>
@@ -78,6 +76,7 @@ function populateData(data) {
 }
 
 async function getSearchCriteria() {
+    // Get values from form and send to server API to receive data back
     let $activityContainer = $("#activityContainer");
     $activityContainer.hide()
 
@@ -94,8 +93,6 @@ async function getSearchCriteria() {
     let activityTypeVal = $("#formActivityType").val()
     bodyFormData.append("activityType", activityTypeVal)
 
-    console.log(participantsVal, priceVal, activityTypeVal)
-
     axios({
             method: "post",
             url: "/api/activity2",
@@ -105,30 +102,25 @@ async function getSearchCriteria() {
             },
         })
         .then(function (resp) {
-            //handle success
             const data = resp.data;
 
             activities = [];
             activities.push(data)
-
-            console.log("INSIDE fetchData", data)
 
             populateData(data)
 
             $spinDiv.hide()
             $activityContainer.show()
         })
-        .catch(function (response) {
-            //handle error
-            console.log(response);
+        .catch(error =>{
+            throw(error)
         });
 }
 
 function setCompleted(id) {
-    console.log(id)
+    // Send checked data to server API to set completed activities
     let activity_Id = document.getElementById(id)
     let checked = document.getElementById(id).checked;
-    console.log(checked)
     let bodyFormData = new FormData();
     bodyFormData.append("activity_Id", id)
     bodyFormData.append("isCompleted", checked)
@@ -139,15 +131,17 @@ function setCompleted(id) {
             headers: {
                 "Content-Type": "multipart/form-data"
             },
-        }).then(function (resp) {
-            //handle success
-
-
-            console.log(resp)
-
-        })
-        .catch(function (resp) {
-            //handle error
-            console.log(resp);
+        }).catch(error =>{
+            throw(error)
         });
+}
+
+function populateNote(id){
+    // Populate modal data for saving notes
+
+    let activityNote= document.getElementById("note" + id).innerHTML
+    let modalTextArea = document.getElementById("noteArea")
+    let activityId = document.getElementById("activityId")
+    modalTextArea.value = activityNote
+    activityId.value = id
 }

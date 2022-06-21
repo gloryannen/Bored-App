@@ -18,11 +18,7 @@ content %}
             <tbody>
               {% for a in activities %}
               <tr>
-                <td>
-                  {% if a.isCompleted %}
-                  <a class="link-secondary" href="/user/{{g.user.id}}/completed_activities/{{a.id}}">
-                   {% endif %}
-                    {{ a.title }}</td>
+                <td>{{ a.title }}</td>
                 <td class="text-end">
                   <input
                     class="form-check-input"

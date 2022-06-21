@@ -132,6 +132,11 @@ class User_Activity(db.Model):
         db.Boolean,
         default=False
     )
+    
+    note = db.Column(
+        db.Text,
+        nullable=True,
+    )
 
     user_id = db.Column(
         db.Integer,
@@ -166,80 +171,6 @@ class Ignored_Activity(db.Model):
     )
     
     user= db.relationship("User")
-        
-    
-
-
-
-class Tag(db.Model):
-    """Tags created by users."""
-
-    __tablename__ = "tags"
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-
-    title = db.Column(
-        db.Text,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
-    )
-
-
-class Activities_Tag(db.Model):
-    """Tags in Activities."""
-
-    __tablename__ = "activities_tag"
-
-    user_activities_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user_activities.id", ondelete="cascade"),
-        primary_key=True,
-    )
-
-    tag_id = db.Column(
-        db.Integer,
-        db.ForeignKey("tags.id"),
-        primary_key=True,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
-        primary_key=True,
-    )
-
-
-class Activity_Note(db.Model):
-    """Notes created by user."""
-
-    __tablename__ = "activity_notes"
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-
-    note = db.Column(
-        db.Text,
-    )
-
-    user_activities_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user_activities.id", ondelete="cascade"),
-        primary_key=True,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id", ondelete="cascade"),
-        primary_key=True,
-    )
 
 
 def connect_db(app):

@@ -19,11 +19,8 @@ def assignRandVariable(price, participants, type):
     if participants == 3:
         nums = ["3", "4", "5","8"]
         valuesToReturn.participants = random.choice(nums)
-        print(valuesToReturn.participants, "PARTICIPANTS RANDOM ----------------------------------------------------")
     else:
-        valuesToReturn.participants = participants  
-        print(valuesToReturn.participants, "PARTICIPANTS 1,2 ----------------------------------------------------")
-          
+        valuesToReturn.participants = participants   
  
     # type = form.activityType.data
     # Randomize activity if multiple are selected.
