@@ -1,10 +1,10 @@
 '''Seed file to make sample data for users db'''
 
 from models import *
-from app import app
+from app import *
 
 # Create all tables
-# db.drop_all()
+db.drop_all()
 db.create_all()
 
 # Add users

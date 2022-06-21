@@ -58,6 +58,14 @@ $ flask run
 
 The applications will always running on http://localhost:5000.
 
+<!-- ROADMAP -->
+
+## Roadmap
+
+- [] Add Tags
+- [] Add Friends and ability to check their activities
+- [] Share activities with Friends
+
 # Bored API
 
 http://www.boredapi.com
