@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.register_blueprint(bp_routes)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql://bored_db'))
+    os.environ.get('DATABASE_URL', 'postgresql:///bored_db')).replace("://", "ql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
