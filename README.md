@@ -1,9 +1,5 @@
 # Bored?
 
-<video width="100" height="100" autoplay>
-    <source src="static/bored-logo.mp4" type="video/mp4">
-</video>
-
 # Link to Application
 
 https://herokuapp.com/login
@@ -14,8 +10,7 @@ Find activities to do when you are bored. You can save, complete, and ignored ac
 
 <img src="static/images/new_activity.png"
      alt="New Activity"
-     width="250" 
-     height="200"
+     width="900"
      />
 
 ## Getting Started
