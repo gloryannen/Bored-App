@@ -10,7 +10,7 @@ Find activities to do when you are bored. You can save, complete, and ignored ac
 
 <img src="static/images/new_activity.png"
      alt="New Activity"
-     width="500"
+     width="900"
      />
 
 ## Getting Started
