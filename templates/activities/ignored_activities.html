@@ -8,7 +8,6 @@
           <div class="mb-3 ">
             <div class="list-group col-6 mx-auto">
               {% for a in activities %}
-                <a href="/user/{{g.user.id}}/activity/{{a.id}}" class="list-group-item list-group-item-action" aria-current="true">
                   <div class="d-flex w-100 justify-content-between align-items-center">
                     <p class="mb-1">{{ a.title }}</p>
                     <form method="POST" action="/activity/{{ a.id }}/remove">
